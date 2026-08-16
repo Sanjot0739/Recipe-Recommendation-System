@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RecipeAI | Recipe Recommendation System</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8faf8;
+            color: #263238;
+        }
+
+        .navbar {
+            background: #1b5e20;
+            padding: 14px 0;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: white !important;
+            margin-left: 15px;
+        }
+
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            min-height: 470px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            background:
+                linear-gradient(rgba(0, 60, 10, 0.62), rgba(0, 60, 10, 0.62)),
+                url("{{ url_for('static', filename='images/placeholder.svg') }}")
+                center/cover;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: clamp(38px, 6vw, 64px);
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            max-width: 760px;
+            margin: 0 auto 30px;
+            font-size: 20px;
+        }
+
+        .hero .btn {
+            padding: 13px 28px;
+            font-weight: 700;
+            border-radius: 30px;
+        }
+
+        .search-section {
+            margin-top: -55px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+        }
+
+        .search-card h2 {
+            color: #1b5e20;
+            font-weight: 700;
+        }
+
+        .search-input {
+            height: 55px;
+            border-radius: 12px 0 0 12px;
+        }
+
+        .search-button {
+            height: 55px;
+            border-radius: 0 12px 12px 0;
+            background: #1b5e20;
+            border-color: #1b5e20;
+            font-weight: 700;
+        }
+
+        .search-button:hover {
+            background: #124416;
+            border-color: #124416;
+        }
+
+        .section-title {
+            color: #1b5e20;
+            font-weight: 800;
+        }
+
+        .feature-card {
+            height: 100%;
+            background: white;
+            border: 0;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            color: #1b5e20;
+        }
+
+        .recipe-card {
+            height: 100%;
+            border: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.13);
+        }
+
+        .recipe-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .recipe-card .card-body {
+            padding: 20px;
+        }
+
+        .recipe-title {
+            color: #1b5e20;
+            font-weight: 700;
+        }
+
+        .recipe-text {
+            color: #687078;
+            min-height: 58px;
+        }
+
+        footer {
+            margin-top: 70px;
+            background: #1b5e20;
+            color: white;
+            padding: 35px 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 576px) {
+            .search-input,
+            .search-button {
+                border-radius: 10px;
+            }
+
+            .search-button {
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="bi bi-egg-fried"></i> RecipeAI
+        </a>
+
+        <button
+            class="navbar-toggler bg-light"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarMenu"
+            aria-controls="navbarMenu"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMenu">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">
+                        Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('recipes') }}">
+                        Recipes
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('about') }}">
+                        About
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('contact') }}">
+                        Contact
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+    <div class="container">
+
+        <h1>Discover Delicious Recipes</h1>
+
+        <p>
+            Find recipes using ingredients you already have.
+            RecipeAI uses machine learning to recommend recipes
+            similar to your search.
+        </p>
+
+        <a href="#recommend" class="btn btn-light">
+            <i class="bi bi-search"></i>
+            Find Recipes
+        </a>
+
+    </div>
+</section>
+
+
+<!-- ================= SEARCH ================= -->
+<section class="search-section" id="recommend">
+
+    <div class="container">
+
+        <div class="search-card">
+
+            <div class="text-center mb-4">
+                <h2>
+                    <i class="bi bi-stars"></i>
+                    Recipe Recommendation System
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Enter a recipe name or ingredients such as
+                    <strong>chicken, tomato, onion</strong>.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ url_for('index') }}">
+
+                <div class="input-group">
+
+                    <input
+                        type="text"
+                        name="ingredients"
+                        class="form-control search-input"
+                        placeholder="Search recipe or ingredients..."
+                        value="{{ query }}"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-success search-button"
+                    >
+                        <i class="bi bi-search"></i>
+                        Recommend
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    {{ total_recipes|default(0) }} recipes available
+                </small>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= FEATURES ================= -->
+<section class="container my-5">
+
+    <div class="text-center mb-4">
+        <h2 class="section-title">How RecipeAI Works</h2>
+        <p class="text-muted">
+            Simple recipe discovery powered by machine learning.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-search"></i>
+                </div>
+
+                <h4>Search</h4>
+
+                <p class="text-muted mb-0">
+                    Enter a recipe name or the ingredients you have
+                    available in your kitchen.
+                </p>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-cpu"></i>
+                </div>
+
+                <h4>Machine Learning</h4>
+
+                <p class="text-muted mb-0">
+                    TF-IDF and cosine similarity compare your search
+                    with recipe and ingredient information.
+                </p>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-egg-fried"></i>
+                </div>
+
+                <h4>Get Recommendations</h4>
+
+                <p class="text-muted mb-0">
+                    Receive relevant recipes and explore similar
+                    dishes from the dataset.
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= RECOMMENDATIONS ================= -->
+{% if recommendations %}
+
+<section class="container my-5">
+
+    <div class="text-center mb-4">
+
+        <h2 class="section-title">
+            🍽 Recommended Recipes
+        </h2>
+
+        <p class="text-muted">
+            Results based on your search:
+            <strong>{{ query }}</strong>
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        {% for recipe in recommendations %}
+
+        <div class="col-lg-4 col-md-6">
+
+            <div class="card recipe-card">
+
+                <img
+                    src="{{ recipe.image_url }}"
+                    alt="{{ recipe.recipe_name }}"
+                    loading="lazy"
+                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.svg') }}';"
+                >
+
+                <div class="card-body">
+
+                    <span class="badge bg-success mb-2">
+                        Recommended
+                    </span>
+
+                    <h4 class="recipe-title">
+                        {{ recipe.recipe_name }}
+                    </h4>
+
+                    <p class="recipe-text">
+                        {{ recipe.ingredients_list|truncate(140) }}
+                    </p>
+
+                    <a
+                        href="{{ url_for('recipe_details', recipe_id=recipe.id) }}"
+                        class="btn btn-success w-100"
+                    >
+                        <i class="bi bi-book"></i>
+                        View Recipe
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="text-center mt-4">
+
+        <a
+            href="{{ url_for('recipes', q=query) }}"
+            class="btn btn-outline-success"
+        >
+            View More Results
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+</section>
+
+{% elif query %}
+
+<section class="container my-5">
+
+    <div class="alert alert-warning text-center">
+
+        <h4>
+            <i class="bi bi-search"></i>
+            No matching recipes found
+        </h4>
+
+        <p class="mb-0">
+            Try a different recipe name or ingredient.
+        </p>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- ================= FOOTER ================= -->
+<footer>
+
+    <div class="container">
+
+        <h3>
+            <i class="bi bi-egg-fried"></i>
+            RecipeAI
+        </h3>
+
+        <p>
+            Discover delicious recipes using machine learning.
+        </p>
+
+        <hr>
+
+        <p class="mb-0">
+            © 2026 Recipe Recommendation System
+        </p>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap JS -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>
